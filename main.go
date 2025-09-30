@@ -1,7 +1,14 @@
 package main
+
 import (
-"fmt"
-"net/http"
+	"context"
+	"database/sql"
+	"fmt"
+	"log"
+	"net/http"
+
+	_ "github.com/lib/pq"
+	sqlc "tpeweb.com/servidor-go/db/sqlc"
 )
 
 func main() {
