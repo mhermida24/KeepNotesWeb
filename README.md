@@ -60,7 +60,7 @@ Deberías ver algo como:
 go version go1.20.5 windows/amd64
 ```
 ## Descargar el proyecto
-- Clonar el repositorio desde GitHub (si ya está en GitHub):
+- Clonar el repositorio desde GitHub:
 ```
 git clone https://github.com/asoutrelle/KeepNotesWeb.git
 ```
