@@ -47,6 +47,9 @@ Esta relación permite clasificar el contenido fácilmente (por ejemplo, en carp
 
 
 # Guía de instalación y ejecución
+## Requisitos previos
+- Tener instalado Go (versión 1.20 o superior recomendada).
+- Tener instalado Git
 ## Instalar Go
 - Descargar el instalador desde la página oficial: https://go.dev/dl/
 - Ejecutar el instalador y seguir los pasos.
@@ -58,6 +61,17 @@ go version
 Deberías ver algo como:
 ```
 go version go1.20.5 windows/amd64
+```
+## Instalar Git
+- Descargar el instalador desde la página oficial: https://git-scm.com/downloads
+- Ejecutar el instalador y seguir los pasos.
+- Verificar la instalación abriendo una terminal y escribiendo:
+```
+git --version
+```
+Deberías ver algo como:
+```
+git version 2.42.0.windows.1
 ```
 ## Descargar el proyecto
 - Clonar el repositorio desde GitHub:
