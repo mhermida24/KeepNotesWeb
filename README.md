@@ -1,6 +1,6 @@
 # 📝 Keep Me Notes
 
-**Keep Me Notes** es una aplicación web diseñada para tomar notas rápidas y organizarlas de forma sencilla y eficiente.  
+**Keep Me Notes** es una aplicación web diseñada para tomar notas rápidas y organizarlas de forma sencilla.  
 Permite **crear, editar y eliminar notas personales**, además de **agruparlas en carpetas** para mantener todo bien estructurado.
 
 ---
@@ -45,3 +45,29 @@ Las carpetas permiten organizar y agrupar las notas relacionadas. Cada carpeta i
 Cada **nota** pertenece a una **carpeta**, y cada **carpeta** puede contener múltiples **notas**.  
 Esta relación permite clasificar el contenido fácilmente (por ejemplo, en carpetas como `Trabajo`, `Estudios`, `Personal`, etc.).
 
+
+# Guía de instalación y ejecución
+## Instalar Go
+- Descargar el instalador desde la página oficial: https://go.dev/dl/
+- Ejecutar el instalador y seguir los pasos.
+- Verificar la instalación abriendo una terminal y escribiendo:
+
+```
+go version
+```
+Deberías ver algo como:
+```
+go version go1.20.5 windows/amd64
+```
+## Descargar el proyecto
+- Clonar el repositorio desde GitHub (si ya está en GitHub):
+```
+git clone https://github.com/asoutrelle/KeepNotesWeb.git
+```
+- Entrar a la carpeta del proyecto
+## Ejecutar la aplicación
+Dentro de la carpeta del proyecto, abre una terminal y ejecuta:
+```
+go run main.go
+```
+- Esto compila y ejecuta la aplicación.
