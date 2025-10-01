@@ -46,7 +46,7 @@ Cada **nota** pertenece a una **carpeta**, y cada **carpeta** puede contener mú
 Esta relación permite clasificar el contenido fácilmente (por ejemplo, en carpetas como `Trabajo`, `Estudios`, `Personal`, etc.).
 
 
-# Guía de instalación y ejecución
+# 🚀 Guía de instalación y ejecución
 ## Requisitos previos
 - Tener instalado Go (versión 1.20 o superior recomendada).
 - Tener instalado Git
@@ -60,7 +60,7 @@ go version
 ```
 Deberías ver algo como:
 ```
-go version go1.20.5 windows/amd64
+go version go1.20.5
 ```
 ## Instalar Git
 - Descargar el instalador desde la página oficial: https://git-scm.com/downloads
@@ -71,9 +71,9 @@ git --version
 ```
 Deberías ver algo como:
 ```
-git version 2.42.0.windows.1
+git version 2.42.0
 ```
-## Descargar el proyecto
+## ⬇️ Descargar el proyecto
 - Clonar el repositorio desde GitHub:
 ```
 git clone https://github.com/asoutrelle/KeepNotesWeb.git
