@@ -1,0 +1,8 @@
+.git
+*.log
+*.out
+db/sqlc/
+*.swp
+.idea/
+.vscode/
+
