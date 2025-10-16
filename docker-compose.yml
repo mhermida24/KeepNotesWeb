@@ -11,7 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-
+      - ./db/schema:/docker-entrypoint-initdb.d
   keepnotesweb:
     build: .
     ports:
