@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: keepnotes
+      POSTGRES_PASSWORD: keepnotes
+      POSTGRES_DB: keepnotesdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  keepnotesweb:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgres://keepnotes:keepnotes@db:5432/keepnotesdb?sslmode=disable"
+
+volumes:
+  db_data:
