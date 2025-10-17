@@ -1,0 +1,29 @@
+# .air.toml para KeepNotesWeb
+
+# Carpeta raíz del proyecto
+root = "."
+
+# Carpeta temporal para los binarios generados por Air
+tmp_dir = "tmp"
+
+[build]
+# Comando para compilar tu proyecto
+cmd = "go build -o tmp/main -buildvcs=false ."
+
+# Binario que se ejecutará
+bin = "tmp/main"
+
+# Extensiones que Air debe vigilar para reiniciar la app
+include_ext = ["go", "html", "sql", "png"]
+
+include_dir = ["static"]
+# Directorios a ignorar
+exclude_dir = ["tmp", "db/sqlc"]
+
+
+[color]
+# Colores en la salida de logs
+main = "yellow"
+watcher = "cyan"
+build = "green"
+runner = "magenta"
