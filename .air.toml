@@ -16,7 +16,7 @@ bin = "tmp/main"
 # Extensiones que Air debe vigilar para reiniciar la app
 include_ext = ["go", "html", "sql", "png"]
 
-include_dir = ["static"]
+# include_dir = ["static"]
 # Directorios a ignorar
 exclude_dir = ["tmp", "db/sqlc"]
 
