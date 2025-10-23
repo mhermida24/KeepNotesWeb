@@ -5,7 +5,7 @@ services:
     image: postgres:15
     environment:
       POSTGRES_USER: keepnotes
-      POSTGRES_PASSWORD: keepnotes
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: keepnotesdb
     ports:
       - "5432:5432"
