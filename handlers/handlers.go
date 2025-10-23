@@ -201,7 +201,15 @@ func (h *UserHandler) deleteNote(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Path[len("/notes/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
 	}
+	err = h.queries.DeleteNote(r.Context(), int32(id))
+	if err != nil {
+		http.Error(w, "Error al borrar la nota", http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *UserHandler) FoldersHandler(w http.ResponseWriter, r *http.Request) {
