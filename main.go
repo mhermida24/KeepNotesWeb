@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	handlerDB "tpeweb.com/servidor-go/db/handlers"
 	sqlc "tpeweb.com/servidor-go/db/sqlc"
 	"tpeweb.com/servidor-go/handlers"
@@ -23,6 +24,7 @@ func main() {
 
 	http.Handle("/", fileServer)
 	http.HandleFunc("/notes", userHandler.NotesHandler)
+	http.HandleFunc("/notes/", userHandler.NoteHandler)
 
 	fmt.Printf("Servidor ESTÁTICO escuchando en http://localhost%s\n", port)
 	err = http.ListenAndServe(port, nil)
