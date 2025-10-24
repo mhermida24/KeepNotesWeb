@@ -217,8 +217,6 @@ func (h *UserHandler) FoldersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		h.getFolders(w, r)
-	case "PUT":
-		h.updateFolder(w, r)
 	case "POST":
 		h.createFolder(w, r)
 	default:
@@ -235,6 +233,8 @@ func (h *UserHandler) FolderHandler(w http.ResponseWriter, r *http.Request) {
 		h.updateFolder(w, r)
 	case "POST":
 		h.createFolder(w, r)
+	case "DELETE":
+		h.deleteFolder(w, r)
 	default:
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 	}
@@ -301,9 +301,102 @@ func (h *UserHandler) createFolder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) getFolderByID(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Path[len("/folders/"):]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+	// Buscar en la base de datos
+	folder, err := h.queries.GetFolder(r.Context(), int32(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "No encontrado", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Error interno", http.StatusInternalServerError)
+		return
+	}
 
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(folder)
+	if err != nil {
+		http.Error(w, "Error al codificar JSON", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *UserHandler) updateFolder(w http.ResponseWriter, r *http.Request) {
+	// Obtener ID desde URL
+	idStr := r.URL.Path[len("/folders/"):]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+	// Buscar en la base de datos
+	folder, err := h.queries.GetFolder(r.Context(), int32(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "No encontrado", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Error interno", http.StatusInternalServerError)
+		return
+	}
+	// codigo para updatear nota
+	var input struct {
+		Name           string  `json:"name"`
+		Description    *string `json:"description"`
+		ParentFolderID *int32  `json:"parent_folder_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Error al decodificar JSON: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	params := sqlc.UpdateFolderParams{
+		ID:   int32(id),
+		Name: input.Name,
+	}
 
+	if input.Description != nil {
+		params.Description = sql.NullString{String: *input.Description, Valid: true}
+	} else {
+		params.Description = sql.NullString{Valid: false}
+	}
+
+	if input.ParentFolderID != nil {
+		params.ParentFolderID = sql.NullInt32{Int32: *input.ParentFolderID, Valid: true}
+	} else {
+		params.ParentFolderID = sql.NullInt32{Valid: false}
+	}
+
+	err = h.queries.UpdateFolder(r.Context(), params)
+	if err != nil {
+		http.Error(w, "Error al actualizar la Carpeta", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(folder)
+	if err != nil {
+		http.Error(w, "Error al codificar JSON", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *UserHandler) deleteFolder(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Path[len("/folders/"):]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+	err = h.queries.DeleteFolder(r.Context(), int32(id))
+	if err != nil {
+		http.Error(w, "Error al borrar la carpeta", http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 }
