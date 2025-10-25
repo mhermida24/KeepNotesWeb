@@ -10,6 +10,7 @@ import (
 
 type Folder struct {
 	ID             int32
+	UserID         sql.NullInt32
 	Name           string
 	Description    sql.NullString
 	ParentFolderID sql.NullInt32
@@ -23,4 +24,12 @@ type Note struct {
 	Body      sql.NullString
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
+}
+
+type User struct {
+	ID        int32
+	Username  string
+	Email     string
+	Password  string
+	CreatedAt sql.NullTime
 }
