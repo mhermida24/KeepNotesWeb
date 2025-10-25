@@ -255,6 +255,7 @@ func (h *UserHandler) createFolder(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
 	var folder struct {
+		UserID         *int32  `json:"user_id"`
 		Name           string  `json:"name"`
 		Description    *string `json:"description"`
 		ParentFolderID *int32  `json:"parent_folder_id"`
@@ -272,6 +273,12 @@ func (h *UserHandler) createFolder(w http.ResponseWriter, r *http.Request) {
 
 	params := sqlc.CreateFolderParams{
 		Name: folder.Name,
+	}
+
+	if folder.UserID != nil {
+		params.UserID = sql.NullInt32{Int32: *folder.UserID, Valid: true}
+	} else {
+		params.UserID = sql.NullInt32{Valid: false}
 	}
 
 	if folder.Description != nil {
@@ -349,6 +356,7 @@ func (h *UserHandler) updateFolder(w http.ResponseWriter, r *http.Request) {
 		Name           string  `json:"name"`
 		Description    *string `json:"description"`
 		ParentFolderID *int32  `json:"parent_folder_id"`
+		UserID         *int32  `json:"user_id"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "Error al decodificar JSON: "+err.Error(), http.StatusBadRequest)
@@ -369,6 +377,12 @@ func (h *UserHandler) updateFolder(w http.ResponseWriter, r *http.Request) {
 		params.ParentFolderID = sql.NullInt32{Int32: *input.ParentFolderID, Valid: true}
 	} else {
 		params.ParentFolderID = sql.NullInt32{Valid: false}
+	}
+
+	if input.UserID != nil {
+		params.UserID = sql.NullInt32{Int32: *input.UserID, Valid: true}
+	} else {
+		params.UserID = sql.NullInt32{Valid: false}
 	}
 
 	err = h.queries.UpdateFolder(r.Context(), params)
@@ -399,4 +413,245 @@ func (h *UserHandler) deleteFolder(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// ============= USERS HANDLERS =============
+
+func (h *UserHandler) UsersHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("📌 UsersHandler llamado con método:", r.Method)
+	switch r.Method {
+	case "GET":
+		h.getUsers(w, r)
+	case "POST":
+		h.createUser(w, r)
+	default:
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *UserHandler) SingleUserHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("📌 SingleUserHandler llamado con método:", r.Method)
+	switch r.Method {
+	case "GET":
+		h.getUserByID(w, r)
+	case "PUT":
+		h.updateUser(w, r)
+	case "DELETE":
+		h.deleteUser(w, r)
+	default:
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *UserHandler) getUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	users, err := h.queries.ListUsers(ctx)
+	if err != nil {
+		http.Error(w, "Error al listar usuarios: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+func (h *UserHandler) createUser(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+
+	var user struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		http.Error(w, "Error al decodificar JSON: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if user.Username == "" || user.Email == "" || user.Password == "" {
+		http.Error(w, "Username, email y password son obligatorios", http.StatusBadRequest)
+		return
+	}
+
+	// TODO: Aquí deberías hashear la contraseña con bcrypt
+	// Por ahora la guardamos en texto plano (NO SEGURO para producción)
+	params := sqlc.CreateUserParams{
+		Username: user.Username,
+		Email:    user.Email,
+		Password: user.Password,
+	}
+
+	createdUser, err := h.queries.CreateUser(ctx, params)
+	if err != nil {
+		http.Error(w, "Error al crear usuario: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(createdUser)
+}
+
+func (h *UserHandler) getUserByID(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Path[len("/users/"):]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.queries.GetUser(r.Context(), int32(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "Usuario no encontrado", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Error interno", http.StatusInternalServerError)
+		return
+	}
+
+	// No devolver la contraseña en la respuesta
+	response := struct {
+		ID        int32  `json:"id"`
+		Username  string `json:"username"`
+		Email     string `json:"email"`
+		CreatedAt string `json:"created_at,omitempty"`
+	}{
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func (h *UserHandler) updateUser(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Path[len("/users/"):]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Verificar que el usuario existe
+	_, err = h.queries.GetUser(r.Context(), int32(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "Usuario no encontrado", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Error interno", http.StatusInternalServerError)
+		return
+	}
+
+	var input struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Error al decodificar JSON: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if input.Username == "" || input.Email == "" || input.Password == "" {
+		http.Error(w, "Username, email y password son obligatorios", http.StatusBadRequest)
+		return
+	}
+
+	// TODO: Hashear la contraseña con bcrypt
+	params := sqlc.UpdateUserParams{
+		ID:       int32(id),
+		Username: input.Username,
+		Email:    input.Email,
+		Password: input.Password,
+	}
+
+	err = h.queries.UpdateUser(r.Context(), params)
+	if err != nil {
+		http.Error(w, "Error al actualizar usuario: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Usuario actualizado correctamente"})
+}
+
+func (h *UserHandler) deleteUser(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Path[len("/users/"):]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	err = h.queries.DeleteUser(r.Context(), int32(id))
+	if err != nil {
+		http.Error(w, "Error al borrar usuario: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// Login handler
+func (h *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	ctx := context.Background()
+
+	var credentials struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
+		http.Error(w, "Error al decodificar JSON: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if credentials.Username == "" || credentials.Password == "" {
+		http.Error(w, "Username y password son obligatorios", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.queries.GetUserByUsername(ctx, credentials.Username)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "Credenciales inválidas", http.StatusUnauthorized)
+			return
+		}
+		http.Error(w, "Error interno", http.StatusInternalServerError)
+		return
+	}
+
+	// TODO: Comparar con bcrypt.CompareHashAndPassword
+	// Por ahora comparación en texto plano (NO SEGURO)
+	if user.Password != credentials.Password {
+		http.Error(w, "Credenciales inválidas", http.StatusUnauthorized)
+		return
+	}
+
+	// Login exitoso - devolver datos del usuario (sin password)
+	response := struct {
+		ID       int32  `json:"id"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Message  string `json:"message"`
+	}{
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Message:  "Login exitoso",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

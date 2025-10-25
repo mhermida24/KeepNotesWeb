@@ -27,6 +27,9 @@ func main() {
 	http.HandleFunc("/notes/", userHandler.NoteHandler)
 	http.HandleFunc("/folders", userHandler.FoldersHandler)
 	http.HandleFunc("/folders/", userHandler.FolderHandler)
+	http.HandleFunc("/users", userHandler.UsersHandler)
+	http.HandleFunc("/users/", userHandler.SingleUserHandler)
+	http.HandleFunc("/login", userHandler.LoginHandler)
 
 	fmt.Printf("Servidor ESTÁTICO escuchando en http://localhost%s\n", port)
 	err = http.ListenAndServe(port, nil)
