@@ -2,43 +2,55 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Descripción del Proyecto: "Keep Me Notes"</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotesKeep</title>
+    <!-- Linked external CSS file instead of inline styles -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Introducción</h1>
-    <p>
-        Bienvenido a "Keep Me Notes XD", tu aplicacion para tomar notas rapidas. 
-        Esta aplicación web te permitirá crear, gestionar y organizar tus notas personales de forma sencilla y eficiente. 
-        Podrás añadir nuevas notas, editarlas cuando lo necesites y eliminarlas una vez que ya no sean relevantes.
-        Este es el punto de partida para construir una herramienta poderosa para tu día a día.
-    </p>
-    <img src="KeepNotes.png" alt="Imagen representativa de la aplicación Keep Me Notes" style="display:block; margin:auto; width:1000px;">
-    <h1>Información que se almacena</h1>
-    <p>
-        El sistema está diseñado para organizar la información en dos estructuras principales: Notas y Carpetas.
-        Cada Nota es el elemento individual que guarda el contenido, y se compone de un título, una fecha, y el cuerpo o texto principal.
-        Para mantener todo ordenado, cada una de estas notas pertenece a una Carpeta específica, la cual funciona como un contenedor que agrupa una colección de múltiples notas relacionadas.
-    </p>
-    <h2>Explicación detallada de las estructuras:</h2>
-    <h3>Nota</h3>
-    <p>La información que se va a almacenar se estructura de la siguiente manera:</p>
-        <ul>
-            <li><strong>Título:</strong> Un breve encabezado que resume el contenido de la nota.</li>
-            <li><strong>Fecha:</strong> La fecha en que se creó o modificó la nota.</li>
-            <li><strong>Cuerpo:</strong> El contenido principal de la nota, donde se puede incluir texto, imágenes, y otros elementos multimedia.</li>
-        </ul>
-    <h3>Carpeta</h3>
-    <p>
-        Las Carpetas son contenedores que agrupan múltiples notas relacionadas. Cada Carpeta puede contener:
-    </p>
-        <ul>
-            <li><strong>Nombre:</strong> Un título que identifica la carpeta.</li>
-            <li><strong>Descripción:</strong> Un breve resumen del propósito de la carpeta y su contenido.</li>
-            <li><strong>Notas:</strong> Una colección de notas que pertenecen a esta carpeta.</li>
-            <li><strong>Sub-Carpetas:</strong> Una colección de carpetas que pertenecen a esta carpeta.</li>
-        </ul>
-    <p>    
-    Relación: Existe una relación directa entre ambas. Cada nota (Note) está asignada a una carpeta (Folder), y cada carpeta puede contener muchas notas. Esto permite que el usuario pueda clasificar su contenido (por ejemplo, en carpetas como "Trabajo", "Estudios" o "Personal").
-    </p>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Folders</h2>
+                <button class="add-folder-btn">+</button>
+            </div>
+            <div class="folder-list">
+                <div class="folder-item">
+                    <div class="folder-item-left">
+                        <span class="folder-icon">📄</span>
+                        <span>All Notes</span>
+                    </div>
+                    <span class="folder-count">0</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="logo">+</div>
+                <h1 class="app-name">NotesKeep</h1>
+            </header>
+
+            <!-- Content -->
+            <div class="content">
+                <div class="content-header">
+                    <h2 class="content-title">
+                        All Notes <span class="content-subtitle">(4 notes)</span>
+                    </h2>
+                </div>
+
+                <!-- Take Note Card -->
+                <div class="take-note-card">
+                    <div class="take-note-content">
+                        <span class="plus-icon">+</span>
+                        <span>Take a note...</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
