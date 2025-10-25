@@ -11,22 +11,29 @@ import (
 )
 
 const createFolder = `-- name: CreateFolder :one
-INSERT INTO folders (name, description, parent_folder_id)
-VALUES ($1, $2, $3)
-RETURNING id, name, description, parent_folder_id, created_at
+INSERT INTO folder (user_id, name, description, parent_folder_id)
+VALUES ($1, $2, $3, $4)
+RETURNING id, user_id, name, description, parent_folder_id, created_at
 `
 
 type CreateFolderParams struct {
+	UserID         sql.NullInt32
 	Name           string
 	Description    sql.NullString
 	ParentFolderID sql.NullInt32
 }
 
 func (q *Queries) CreateFolder(ctx context.Context, arg CreateFolderParams) (Folder, error) {
-	row := q.db.QueryRowContext(ctx, createFolder, arg.Name, arg.Description, arg.ParentFolderID)
+	row := q.db.QueryRowContext(ctx, createFolder,
+		arg.UserID,
+		arg.Name,
+		arg.Description,
+		arg.ParentFolderID,
+	)
 	var i Folder
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.Name,
 		&i.Description,
 		&i.ParentFolderID,
@@ -36,7 +43,7 @@ func (q *Queries) CreateFolder(ctx context.Context, arg CreateFolderParams) (Fol
 }
 
 const createNote = `-- name: CreateNote :one
-INSERT INTO notes (title, body, folder_id)
+INSERT INTO note (title, body, folder_id)
 VALUES ($1, $2, $3)
 RETURNING id, title, body, folder_id, created_at
 `
@@ -68,8 +75,39 @@ func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (CreateN
 	return i, err
 }
 
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (username, email, password)
+VALUES ($1, $2, $3)
+RETURNING id, username, email, created_at
+`
+
+type CreateUserParams struct {
+	Username string
+	Email    string
+	Password string
+}
+
+type CreateUserRow struct {
+	ID        int32
+	Username  string
+	Email     string
+	CreatedAt sql.NullTime
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
+	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Email, arg.Password)
+	var i CreateUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const deleteFolder = `-- name: DeleteFolder :exec
-DELETE FROM folders
+DELETE FROM folder
 WHERE id = $1
 `
 
@@ -79,7 +117,7 @@ func (q *Queries) DeleteFolder(ctx context.Context, id int32) error {
 }
 
 const deleteNote = `-- name: DeleteNote :exec
-DELETE FROM notes
+DELETE FROM note
 WHERE id = $1
 `
 
@@ -88,9 +126,19 @@ func (q *Queries) DeleteNote(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id = $1
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	return err
+}
+
 const getFolder = `-- name: GetFolder :one
-SELECT id, name, description, parent_folder_id, created_at
-FROM folders
+SELECT id, user_id, name, description, parent_folder_id, created_at
+FROM folder
 WHERE id = $1
 `
 
@@ -99,6 +147,7 @@ func (q *Queries) GetFolder(ctx context.Context, id int32) (Folder, error) {
 	var i Folder
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.Name,
 		&i.Description,
 		&i.ParentFolderID,
@@ -108,33 +157,85 @@ func (q *Queries) GetFolder(ctx context.Context, id int32) (Folder, error) {
 }
 
 const getNote = `-- name: GetNote :one
-SELECT id, title, body, created_at
-FROM notes
+SELECT id, folder_id, title, body, created_at, updated_at
+FROM note
 WHERE id = $1
 `
 
-type GetNoteRow struct {
-	ID        int32
-	Title     string
-	Body      sql.NullString
-	CreatedAt sql.NullTime
-}
-
-func (q *Queries) GetNote(ctx context.Context, id int32) (GetNoteRow, error) {
+func (q *Queries) GetNote(ctx context.Context, id int32) (Note, error) {
 	row := q.db.QueryRowContext(ctx, getNote, id)
-	var i GetNoteRow
+	var i Note
 	err := row.Scan(
 		&i.ID,
+		&i.FolderID,
 		&i.Title,
 		&i.Body,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUser = `-- name: GetUser :one
+SELECT id, username, email, password, created_at
+FROM users
+WHERE id = $1
+`
+
+func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.Password,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, username, email, password, created_at
+FROM users
+WHERE email = $1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.Password,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, username, email, password, created_at
+FROM users
+WHERE username = $1
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.Password,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listFolders = `-- name: ListFolders :many
-SELECT id, name, description, parent_folder_id, created_at
-FROM folders
+SELECT id, user_id, name, description, parent_folder_id, created_at
+FROM folder
 ORDER BY name
 `
 
@@ -149,6 +250,44 @@ func (q *Queries) ListFolders(ctx context.Context) ([]Folder, error) {
 		var i Folder
 		if err := rows.Scan(
 			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.Description,
+			&i.ParentFolderID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFoldersByUser = `-- name: ListFoldersByUser :many
+SELECT id, user_id, name, description, parent_folder_id, created_at
+FROM folder
+WHERE user_id = $1
+ORDER BY name
+`
+
+func (q *Queries) ListFoldersByUser(ctx context.Context, userID sql.NullInt32) ([]Folder, error) {
+	rows, err := q.db.QueryContext(ctx, listFoldersByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Folder
+	for rows.Next() {
+		var i Folder
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
 			&i.Name,
 			&i.Description,
 			&i.ParentFolderID,
@@ -168,31 +307,67 @@ func (q *Queries) ListFolders(ctx context.Context) ([]Folder, error) {
 }
 
 const listNotes = `-- name: ListNotes :many
-SELECT id, title, body, created_at
-FROM notes
+SELECT id, folder_id, title, body, created_at, updated_at
+FROM note
 ORDER BY title
 `
 
-type ListNotesRow struct {
-	ID        int32
-	Title     string
-	Body      sql.NullString
-	CreatedAt sql.NullTime
-}
-
-func (q *Queries) ListNotes(ctx context.Context) ([]ListNotesRow, error) {
+func (q *Queries) ListNotes(ctx context.Context) ([]Note, error) {
 	rows, err := q.db.QueryContext(ctx, listNotes)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListNotesRow
+	var items []Note
 	for rows.Next() {
-		var i ListNotesRow
+		var i Note
 		if err := rows.Scan(
 			&i.ID,
+			&i.FolderID,
 			&i.Title,
 			&i.Body,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT id, username, email, created_at
+FROM users
+ORDER BY username
+`
+
+type ListUsersRow struct {
+	ID        int32
+	Username  string
+	Email     string
+	CreatedAt sql.NullTime
+}
+
+func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUsersRow
+	for rows.Next() {
+		var i ListUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Email,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -209,8 +384,8 @@ func (q *Queries) ListNotes(ctx context.Context) ([]ListNotesRow, error) {
 }
 
 const updateFolder = `-- name: UpdateFolder :exec
-UPDATE folders
-SET name = $2, description = $3, parent_folder_id = $4
+UPDATE folder
+SET name = $2, description = $3, parent_folder_id = $4, user_id = $5
 WHERE id = $1
 `
 
@@ -219,6 +394,7 @@ type UpdateFolderParams struct {
 	Name           string
 	Description    sql.NullString
 	ParentFolderID sql.NullInt32
+	UserID         sql.NullInt32
 }
 
 func (q *Queries) UpdateFolder(ctx context.Context, arg UpdateFolderParams) error {
@@ -227,12 +403,13 @@ func (q *Queries) UpdateFolder(ctx context.Context, arg UpdateFolderParams) erro
 		arg.Name,
 		arg.Description,
 		arg.ParentFolderID,
+		arg.UserID,
 	)
 	return err
 }
 
 const updateNote = `-- name: UpdateNote :exec
-UPDATE notes
+UPDATE note
 SET title = $2, body = $3, folder_id = $4, updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 `
@@ -250,6 +427,29 @@ func (q *Queries) UpdateNote(ctx context.Context, arg UpdateNoteParams) error {
 		arg.Title,
 		arg.Body,
 		arg.FolderID,
+	)
+	return err
+}
+
+const updateUser = `-- name: UpdateUser :exec
+UPDATE users
+SET username = $2, email = $3, password = $4
+WHERE id = $1
+`
+
+type UpdateUserParams struct {
+	ID       int32
+	Username string
+	Email    string
+	Password string
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser,
+		arg.ID,
+		arg.Username,
+		arg.Email,
+		arg.Password,
 	)
 	return err
 }

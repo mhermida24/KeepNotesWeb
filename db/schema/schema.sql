@@ -1,14 +1,24 @@
-CREATE TABLE folders (
+-- Users must be created first because folder references it
+CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  description TEXT,
-  parent_folder_id INT REFERENCES folders(id),
+  username VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE notes (
+CREATE TABLE folder (
   id SERIAL PRIMARY KEY,
-  folder_id INT REFERENCES folders(id) ON DELETE CASCADE,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  parent_folder_id INT REFERENCES folder(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE note (
+  id SERIAL PRIMARY KEY,
+  folder_id INT REFERENCES folder(id) ON DELETE CASCADE,
   title VARCHAR(255) NOT NULL,
   body TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
