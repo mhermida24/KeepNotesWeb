@@ -12,7 +12,7 @@ CREATE TABLE folder (
   user_id INT REFERENCES users(id) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL,
   description TEXT,
-  parent_folder_id INT REFERENCES folder(id),
+  parent_folder_id INT REFERENCES folder(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
