@@ -110,7 +110,7 @@ func (h *UserHandler) createNote(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) getNoteByID(w http.ResponseWriter, r *http.Request) {
 	// Obtener ID desde URL
-	idStr := r.URL.Path[len("/notes/"):]
+	idStr := r.URL.Path[len("/api/notes/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -138,7 +138,7 @@ func (h *UserHandler) getNoteByID(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) updateNote(w http.ResponseWriter, r *http.Request) {
 	// Obtener ID desde URL
-	idStr := r.URL.Path[len("/notes/"):]
+	idStr := r.URL.Path[len("/api/notes/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -198,7 +198,7 @@ func (h *UserHandler) updateNote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) deleteNote(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/notes/"):]
+	idStr := r.URL.Path[len("/api/notes/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -308,7 +308,7 @@ func (h *UserHandler) createFolder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) getFolderByID(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/folders/"):]
+	idStr := r.URL.Path[len("/api/folders/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -335,7 +335,7 @@ func (h *UserHandler) getFolderByID(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) updateFolder(w http.ResponseWriter, r *http.Request) {
 	// Obtener ID desde URL
-	idStr := r.URL.Path[len("/folders/"):]
+	idStr := r.URL.Path[len("/api/folders/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -401,7 +401,7 @@ func (h *UserHandler) updateFolder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) deleteFolder(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/folders/"):]
+	idStr := r.URL.Path[len("/api/folders/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -493,7 +493,7 @@ func (h *UserHandler) createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) getUserByID(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/users/"):]
+	idStr := r.URL.Path[len("/api/users/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -527,7 +527,7 @@ func (h *UserHandler) getUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) updateUser(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/users/"):]
+	idStr := r.URL.Path[len("/api/users/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
@@ -581,7 +581,7 @@ func (h *UserHandler) updateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) deleteUser(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Path[len("/users/"):]
+	idStr := r.URL.Path[len("/api/users/"):]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
