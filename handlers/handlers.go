@@ -21,7 +21,6 @@ func NewUserHandler(q *sqlc.Queries) *UserHandler {
 }
 
 func (h *UserHandler) NotesHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("📌 NotesHandler llamado con método:", r.Method)
 	switch r.Method {
 	case "GET":
 		h.getNotes(w, r)
@@ -32,7 +31,6 @@ func (h *UserHandler) NotesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (h *UserHandler) NoteHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("📌 NoteHandler llamado con método:", r.Method)
 	switch r.Method {
 	case "GET":
 		h.getNoteByID(w, r)
