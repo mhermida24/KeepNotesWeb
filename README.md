@@ -82,13 +82,7 @@ git clone https://github.com/asoutrelle/KeepNotesWeb.git
 ## Ejecutar la aplicación
 Dentro de la carpeta del proyecto, abre una terminal y ejecuta:
 ```
-go run main.go
+chmod +x ./runtest.sh
+./runtest.sh
 ```
 - Esto compila y ejecuta la aplicación.
-
-- En consola deberia aparecer lo siguiente
-```
-    Servidor ESTÁTICO escuchando en http://localhost:8080
-    Sirviendo archivos desde: ./static
-```
--   Usa la URL que te da el programa para ver la pagina web.
