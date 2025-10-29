@@ -1,8 +1,16 @@
 #!/bin/bash
 set -e
-
+docker compose up -d --build
 BASE_FOLDERS_URL="http://localhost:8080/api/folders"
 BASE_NOTES_URL="http://localhost:8080/api/notes"
+
+echo "=== Esperando a que el servidor Go esté disponible ==="
+until curl -s --head --request GET http://localhost:8080/ | grep "200 OK" > /dev/null; do
+  echo "El servidor aún no está listo, esperando..."
+  sleep 2
+done
+echo "Servidor Go detectado, continuando con el script."
+echo ""
 
 echo "=== Creando carpeta padre ==="
 parent_id=$(curl -s -X POST "$BASE_FOLDERS_URL" \
@@ -44,17 +52,14 @@ note2_id=$(curl -s -X POST "$BASE_NOTES_URL" \
 echo "Nota creada con ID: $note2_id"
 echo ""
 
-for id in $parent_id $sub1_id $sub2_id; do
-  echo "=== Obteniendo carpeta con ID $id ==="
-  curl -s -X GET "$BASE_FOLDERS_URL/$id"
+  echo "=== Obteniendo carpeta con ID  $sub1_id ==="
+  curl -s -X GET "$BASE_FOLDERS_URL/$sub1_id"
   echo -e "\n"
-done
 
-for id in $note1_id $note2_id; do
-  echo "=== Obteniendo nota con ID $id ==="
-  curl -s -X GET "$BASE_NOTES_URL/$id"
+
+  echo "=== Obteniendo nota con ID $note1_id ==="
+  curl -s -X GET "$BASE_NOTES_URL/$note1_id"
   echo -e "\n"
-done
 
 echo "=== Actualizando Subcarpeta 2 para que sea hija de Subcarpeta 1 ==="
 curl -s -X PUT "$BASE_FOLDERS_URL/$sub2_id" \
@@ -100,3 +105,4 @@ echo "=== Listando todas las notas finales ==="
 curl -s -X GET "$BASE_NOTES_URL"
 echo -e "\n"
 
+echo "Para ingresar al Frontend y testear las APIs abri en tu navegador http://localhost:8080"
