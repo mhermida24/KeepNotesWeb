@@ -79,6 +79,9 @@ git version 2.42.0
 git clone https://github.com/asoutrelle/KeepNotesWeb.git
 ```
 - Entrar a la carpeta del proyecto
+```
+cd KeepNotesWeb/
+```
 ## Ejecutar la aplicación
 Dentro de la carpeta del proyecto, abre una terminal y ejecuta:
 ```
